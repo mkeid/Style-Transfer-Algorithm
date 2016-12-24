@@ -9,14 +9,11 @@ from scipy.misc import toimage
 # Model Hyper Params
 photo_path = 'photo.jpg'
 art_path = 'art.jpg'
+content_layer = 'conv4_2'
+style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
+content_weight, style_weight, bias_weight = 0.001, 1.0, 1.25
 epochs = 20000
 learning_rate = 0.01
-content_weight, style_weight, bias_weight = 0.001, 1.0, 1.25
-
-# Process photo and art images for content and style learning
-photo = utils.load_image(photo_path).reshape((1, 224, 224, 3)).astype(np.float32)
-art = utils.load_image(art_path).reshape((1, 224, 224, 3)).astype(np.float32)
-image_shape = [1, 224, 224, 3]
 
 
 # Given an activated filter maps of any particular layer, return its respected gram matrix
@@ -43,40 +40,43 @@ def get_bias_loss(x):
 
 
 # Given the photo activation filter maps of the photo and the generated image, return the content loss
-def get_content_loss(x, c):
+def get_content_loss(x, p):
     with tf.name_scope('get_content_loss'):
-        content_noise_out = x.conv4_2
-        content_photo_out = c.conv4_2
+        content_noise_out = getattr(x, content_layer)
+        content_photo_out = getattr(p, content_layer)
         sum_of_squared_diffs = tf.reduce_sum(tf.square(tf.sub(content_noise_out, content_photo_out)))
         return tf.mul(0.5, sum_of_squared_diffs)
 
 
 # Compute style loss
-def get_style_loss(x_layers, art_layers):
+def get_style_loss(x, a):
     with tf.name_scope('get_style_loss'):
-        style_layer_losses = [(get_style_loss_for_layer(xl, al)) for xl, al in zip(x_layers, art_layers)]
-
-        # Weigh the layer losses and return their sum
+        style_layer_losses = [(get_style_loss_for_layer(x, a, l)) for l in style_layers]
         style_weights = tf.constant([0.2] * len(style_layer_losses), tf.float32)
         weighted_layer_losses = tf.mul(style_weights, tf.convert_to_tensor(style_layer_losses))
         return tf.reduce_sum(weighted_layer_losses)
 
 
 # Compute style loss for a given layer
-def get_style_loss_for_layer(xl, al):
+def get_style_loss_for_layer(x, a, l):
     with tf.name_scope('get_style_loss_for_layer'):
         # Compute gram matrices using the activated filter maps of the art and generated images
-        a_layer_gram = convert_to_gram(al)
-        x_layer_gram = convert_to_gram(xl)
+        x_layer_maps = getattr(x, l)
+        a_layer_maps = getattr(a, l)
+        x_layer_gram = convert_to_gram(x_layer_maps)
+        a_layer_gram = convert_to_gram(a_layer_maps)
 
-        # Compute the gram loss using the gram matrices
-        style_layer_shape = xl.get_shape().as_list()
-        style_layer_elements = ((style_layer_shape[1] * style_layer_shape[2]) ** 2) * (style_layer_shape[3] ** 2)
-        style_fraction = 1.0 / (4.0 * style_layer_elements)
-        gram_loss = tf.reduce_sum(tf.square(tf.sub(x_layer_gram, a_layer_gram)))
+        # Make sure the feature map dimensions are the same
+        assert_equal_shapes = tf.assert_equal(x_layer_maps.get_shape(), a_layer_maps.get_shape())
+        with tf.control_dependencies([assert_equal_shapes]):
+            # Compute the gram loss using the gram matrices
+            style_layer_shape = x_layer_maps.get_shape().as_list()
+            style_layer_elements = ((style_layer_shape[1] * style_layer_shape[2]) ** 2) * (style_layer_shape[3] ** 2)
+            style_fraction = 1.0 / (4.0 * style_layer_elements)
+            gram_loss = tf.reduce_sum(tf.square(tf.sub(x_layer_gram, a_layer_gram)))
 
-        # Compute the end layer loss as the weighted gram loss
-        return tf.mul(style_fraction, gram_loss)
+            # Compute the end layer loss as the weighted gram loss
+            return tf.mul(style_fraction, gram_loss)
 
 
 # Render the generated image given the session and image variable
@@ -85,29 +85,30 @@ def render_img(s, x):
 
 
 with tf.Session() as sess:
-    # Init
+    # Initialize noise and process photo and art images for content and style learning
+    image_shape = [1, 224, 224, 3]
     noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
+    photo = utils.load_image(photo_path).reshape(image_shape).astype(np.float32)
+    art = utils.load_image(art_path).reshape(image_shape).astype(np.float32)
 
     # VGG Networks Init
-    content_model = vgg19.Vgg19()
-    with tf.name_scope('vgg_content'):
-        content_model.build(photo)
+    with tf.name_scope('vgg_photo'):
+        photo_model = vgg19.Vgg19()
+        photo_model.build(photo)
 
-    style_model = vgg19.Vgg19()
-    with tf.name_scope('vgg_style'):
-        style_model.build(art)
+    with tf.name_scope('vgg_art'):
+        art_model = vgg19.Vgg19()
+        art_model.build(art)
 
-    x_model = vgg19.Vgg19()
     with tf.name_scope('vgg_x'):
+        x_model = vgg19.Vgg19()
         x_model.build(noise)
 
     # Loss functions
-    x_style_layers = [x_model.conv1_1, x_model.conv2_1, x_model.conv3_1, x_model.conv4_1, x_model.conv5_1]
-    art_style_layers = [style_model.conv1_1, style_model.conv2_1, style_model.conv3_1, style_model.conv4_1, style_model.conv5_1]
     with tf.name_scope('loss'):
         weighted_bias_loss = tf.mul(bias_weight, get_bias_loss(noise))
-        weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, content_model))
-        weighted_style_loss = tf.mul(style_weight, get_style_loss(x_style_layers, art_style_layers))
+        weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, photo_model))
+        weighted_style_loss = tf.mul(style_weight, get_style_loss(x_model, art_model))
         total_loss = weighted_content_loss + weighted_style_loss + weighted_bias_loss
 
     # Update image
