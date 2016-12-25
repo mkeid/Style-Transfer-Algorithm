@@ -19,10 +19,11 @@ def load_image(path):
     short_edge = min(img.shape[:2])
     yy = int((img.shape[0] - short_edge) / 2)
     xx = int((img.shape[1] - short_edge) / 2)
+    shape = list(img.shape)
+
     crop_img = img[yy: yy + short_edge, xx: xx + short_edge]
-    # resize to 224, 224
-    resized_img = skimage.transform.resize(crop_img, (224, 224))
-    return resized_img
+    resized_img = skimage.transform.resize(crop_img, (shape[0], shape[1]))
+    return resized_img, shape
 
 
 # returns the top1 string

@@ -113,11 +113,17 @@ def save_img(s, x):
 
 
 with tf.Session() as sess:
-    # Initialize noise and process photo and art images for content and style learning
-    image_shape = [1, 224, 224, 3]
+    # Initialize and process photo image to be used for our content
+    photo, image_shape = utils.load_image(input_path)
+    image_shape = [1] + image_shape
+    photo = photo.reshape(image_shape).astype(np.float32)
+
+    # Initialize and process art image to be used for our style
+    art = utils.load_image(style_path)[0]
+    art = art.reshape(image_shape).astype(np.float32)
+
+    # Initialize the variable image that will become our final output as random noise
     noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
-    photo = utils.load_image(input_path).reshape(image_shape).astype(np.float32)
-    art = utils.load_image(style_path).reshape(image_shape).astype(np.float32)
 
     # VGG Networks Init
     with tf.name_scope('vgg_photo'):
