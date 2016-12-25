@@ -11,10 +11,16 @@ from scipy.misc import toimage
 # Model Hyper Params
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
-content_weight, style_weight, bias_weight = 0.001, 1.0, 0.01
 epochs = 20000
 learning_rate = 0.01
 total_variation_smoothing = 1.5
+norm_term = 6.0
+
+# Loss term weights
+content_weight = 0.001
+style_weight = 1.0
+norm_weight = 0.01
+total_variation_weight = 0.01
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -49,7 +55,7 @@ def get_content_loss(x, p):
         content_noise_out = getattr(x, content_layer)
         content_photo_out = getattr(p, content_layer)
 
-        # Compute and return the loss
+        # Compute and return the content loss term as the mean squared error
         sum_of_squared_diffs = tf.reduce_sum(tf.square(tf.sub(content_noise_out, content_photo_out)))
         return tf.mul(0.5, sum_of_squared_diffs)
 
@@ -61,6 +67,12 @@ def get_style_loss(x, a):
         style_weights = tf.constant([0.2] * len(style_layer_losses), tf.float32)
         weighted_layer_losses = tf.mul(style_weights, tf.convert_to_tensor(style_layer_losses))
         return tf.reduce_sum(weighted_layer_losses)
+
+
+# Compute the norm of a given image
+def get_norm(x):
+    summed_terms = tf.reduce_sum(tf.pow(x, norm_term))
+    return tf.pow(summed_terms, 1 / norm_term)
 
 
 # Compute style loss for a given layer
@@ -140,10 +152,11 @@ with tf.Session() as sess:
 
     # Loss functions
     with tf.name_scope('loss'):
-        weighted_bias_loss = tf.mul(bias_weight, get_total_variation(noise, image_shape))
         weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, photo_model))
         weighted_style_loss = tf.mul(style_weight, get_style_loss(x_model, art_model))
-        total_loss = weighted_content_loss + weighted_style_loss + weighted_bias_loss
+        weighted_norm_loss = tf.mul(norm_weight, get_norm(noise))
+        weighted_total_variation_loss = tf.mul(total_variation_weight, get_total_variation(noise, image_shape))
+        total_loss = weighted_content_loss + weighted_style_loss + weighted_norm_loss + weighted_total_variation_loss
 
     # Update image
     with tf.name_scope('update_image'):

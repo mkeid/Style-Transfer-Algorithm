@@ -4,7 +4,7 @@ This is a TensorFlow implmentation of [*A Neural Algorithm of Artistic Style*](h
 
 Using this implementation, we were able to emulate and achieve the same stylistic results as those in the original paper.
 
-The purpose of this repository is to port the joint texture-synthesizing and representation-inverting stylistic-transfer algorithm to TensorFlow.
+The purpose of this repository is to port the joint [texture-synthesizing](https://arxiv.org/pdf/1505.07376v3.pdf) and [representation-inverting](https://arxiv.org/pdf/1412.0035v1.pdf) stylistic-transfer algorithm to TensorFlow.
 
 ## Prerequisites
 
