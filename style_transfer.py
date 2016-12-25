@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 import utils
 from scipy.misc import toimage
+import scipy.ndimage
 
 # Model Hyper Params
 content_layer = 'conv4_2'
@@ -19,8 +20,8 @@ norm_term = 6.0
 # Loss term weights
 content_weight = 0.001
 style_weight = 1.0
-norm_weight = 0.01
-total_variation_weight = 0.01
+norm_weight = 0.1
+total_variation_weight = 0.1
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -131,8 +132,9 @@ with tf.Session() as sess:
     photo = photo.reshape(image_shape).astype(np.float32)
 
     # Initialize and process art image to be used for our style
-    art = utils.load_image(style_path)[0]
-    art = art.reshape(image_shape).astype(np.float32)
+    art, art_shape = utils.load_image(style_path)
+    assert [1] + art_shape == image_shape, "Both the input and style images must be the same shape."
+    art = art.reshape(art_shape).astype(np.float32)
 
     # Initialize the variable image that will become our final output as random noise
     noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
@@ -140,15 +142,15 @@ with tf.Session() as sess:
     # VGG Networks Init
     with tf.name_scope('vgg_photo'):
         photo_model = vgg19.Vgg19()
-        photo_model.build(photo)
+        photo_model.build(photo, image_shape[1:])
 
     with tf.name_scope('vgg_art'):
         art_model = vgg19.Vgg19()
-        art_model.build(art)
+        art_model.build(art, image_shape[1:])
 
     with tf.name_scope('vgg_x'):
         x_model = vgg19.Vgg19()
-        x_model.build(noise)
+        x_model.build(noise, image_shape[1:])
 
     # Loss functions
     with tf.name_scope('loss'):
@@ -169,7 +171,7 @@ with tf.Session() as sess:
     print("Initializing variables and beginning training..")
     sess.run(tf.initialize_all_variables())
     for i in range(epochs):
-        if i % 50 == 0:
+        if i % 100 == 0:
             print("Epoch %d | Total Error is %s" % (i, sess.run(total_loss)))
             render_img(sess, noise)
         sess.run(update_image)

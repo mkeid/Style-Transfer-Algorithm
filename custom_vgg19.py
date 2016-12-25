@@ -1,8 +1,6 @@
 import os
 import tensorflow as tf
-
 import numpy as np
-import time
 import inspect
 
 VGG_MEAN = [103.939, 116.779, 123.68]
@@ -34,20 +32,27 @@ class Vgg19:
         else:
             self.data_dict = data.item()
 
-    def build(self, rgb):
+    def build(self, rgb, shape):
         rgb_scaled = rgb * 255.0
+        num_channels = shape[2]
+        channel_shape = shape
+        channel_shape[2] = 1
 
         # Convert RGB to BGR
         red, green, blue = tf.split(3, 3, rgb_scaled)
-        assert red.get_shape().as_list()[1:] == [224, 224, 1]
-        assert green.get_shape().as_list()[1:] == [224, 224, 1]
-        assert blue.get_shape().as_list()[1:] == [224, 224, 1]
+
+        assert red.get_shape().as_list()[1:] == channel_shape
+        assert green.get_shape().as_list()[1:] == channel_shape
+        assert blue.get_shape().as_list()[1:] == channel_shape
+
         bgr = tf.concat(3, [
             blue - VGG_MEAN[0],
             green - VGG_MEAN[1],
             red - VGG_MEAN[2],
         ])
-        assert bgr.get_shape().as_list()[1:] == [224, 224, 3]
+
+        shape[2] = num_channels
+        assert bgr.get_shape().as_list()[1:] == shape
 
         self.conv1_1 = self.conv_layer(bgr, "conv1_1")
         self.conv1_2 = self.conv_layer(self.conv1_1, "conv1_2")
