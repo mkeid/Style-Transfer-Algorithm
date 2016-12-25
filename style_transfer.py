@@ -134,7 +134,7 @@ with tf.Session() as sess:
     # Initialize and process art image to be used for our style
     art, art_shape = utils.load_image(style_path)
     assert [1] + art_shape == image_shape, "Both the input and style images must be the same shape."
-    art = art.reshape(art_shape).astype(np.float32)
+    art = art.reshape(image_shape).astype(np.float32)
 
     # Initialize the variable image that will become our final output as random noise
     noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
