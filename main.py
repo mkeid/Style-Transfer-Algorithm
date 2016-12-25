@@ -11,13 +11,15 @@ photo_path = 'photo.jpg'
 art_path = 'art.jpg'
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
-content_weight, style_weight, bias_weight = 0.001, 1.0, 1.25
+content_weight, style_weight, bias_weight = 0.001, 1.0, 0.01
 epochs = 20000
 learning_rate = 0.01
+total_variation_smoothing = 1.5
 
 
 # Given an activated filter maps of any particular layer, return its respected gram matrix
 def convert_to_gram(filter_maps):
+    # Get the dimensions of the filter maps to reshape them into two dimenions
     dimension = filter_maps.get_shape().as_list()
     reshaped_maps = tf.reshape(filter_maps, [dimension[1] * dimension[2], dimension[3]])
 
@@ -28,22 +30,14 @@ def convert_to_gram(filter_maps):
         return tf.matmul(reshaped_maps, reshaped_maps, transpose_b=True)
 
 
-# Compute bias los
-def get_bias_loss(x):
-    with tf.name_scope('get_bias_loass'):
-        height = image_shape[1]
-        width = image_shape[2]
-        a = tf.square(x[:, :height - 1, :width - 1, :] - x[:, 1:, :width - 1, :])
-        b = tf.square(x[:, :height - 1, :width - 1, :] - x[:, :height - 1, 1:, :])
-        c = tf.add(a, b)
-        return tf.reduce_sum(tf.pow(c, 1.25))
-
-
 # Given the photo activation filter maps of the photo and the generated image, return the content loss
 def get_content_loss(x, p):
     with tf.name_scope('get_content_loss'):
+        # Get the activated VGG feature maps
         content_noise_out = getattr(x, content_layer)
         content_photo_out = getattr(p, content_layer)
+
+        # Compute and return the loss
         sum_of_squared_diffs = tf.reduce_sum(tf.square(tf.sub(content_noise_out, content_photo_out)))
         return tf.mul(0.5, sum_of_squared_diffs)
 
@@ -79,9 +73,25 @@ def get_style_loss_for_layer(x, a, l):
             return tf.mul(style_fraction, gram_loss)
 
 
+# Compute total variation regularization loss term
+def get_total_variation(x, shape):
+    with tf.name_scope('get_total_variation'):
+        # Get the dimensions of the variable image
+        height = shape[1]
+        width = shape[2]
+
+        # Disjoin the variable image and evaluate the total variation
+        x_cropped = x[:, :height - 1, :width - 1, :]
+        left_term = tf.square(x[:, 1:, :width - 1, :] - x_cropped)
+        right_term = tf.square(x[:, :height - 1, 1:, :] - x_cropped)
+        smoothed_summed_terms = tf.pow(tf.add(left_term, right_term), tf.div(total_variation_smoothing, 2))
+        return tf.reduce_sum(smoothed_summed_terms)
+
+
 # Render the generated image given the session and image variable
 def render_img(s, x):
-    toimage(np.reshape(s.run(x), [224, 224, 3])).show()
+    shape = x.get_shape().as_list()
+    toimage(np.reshape(s.run(x), shape[1:])).show()
 
 
 with tf.Session() as sess:
@@ -106,7 +116,7 @@ with tf.Session() as sess:
 
     # Loss functions
     with tf.name_scope('loss'):
-        weighted_bias_loss = tf.mul(bias_weight, get_bias_loss(noise))
+        weighted_bias_loss = tf.mul(bias_weight, get_total_variation(noise, image_shape))
         weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, photo_model))
         weighted_style_loss = tf.mul(style_weight, get_style_loss(x_model, art_model))
         total_loss = weighted_content_loss + weighted_style_loss + weighted_bias_loss
@@ -129,5 +139,5 @@ with tf.Session() as sess:
 
     # FIN
     print("Training complete. Rendering final image and closing TensorFlow session..")
-    render_img(noise, noise.eval())
+    render_img(sess, noise.eval())
     sess.close()
