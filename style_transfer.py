@@ -1,20 +1,32 @@
 #!/usr/bin/python
 # Mohamed K. Eid (mohamedkeid@gmail.com)
+
+import argparse
 import custom_vgg19 as vgg19
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 import utils
 from scipy.misc import toimage
 
 # Model Hyper Params
-photo_path = 'photo.jpg'
-art_path = 'art.jpg'
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 content_weight, style_weight, bias_weight = 0.001, 1.0, 0.01
 epochs = 20000
 learning_rate = 0.01
 total_variation_smoothing = 1.5
+
+# Parse arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--input", default='photo.jpg', help="path to the input image you would like to apply the style to")
+parser.add_argument("--style", default='art.jpg', help="path to the image to be used as the style for the input image")
+parser.add_argument("--output", default='./', help="path to where the image with the applied style will be created")
+args = parser.parse_args()
+
+# Assign image paths from the arg parsing
+input_path = args.input
+style_path = args.style
+out_path = args.output
 
 
 # Given an activated filter maps of any particular layer, return its respected gram matrix
@@ -94,12 +106,18 @@ def render_img(s, x):
     toimage(np.reshape(s.run(x), shape[1:])).show()
 
 
+# Save the generated image given the session and image variable
+def save_img(s, x):
+    shape = x.get_shape().as_list()
+    toimage(np.reshape(s.run(x), shape[1:])).save(out_path)
+
+
 with tf.Session() as sess:
     # Initialize noise and process photo and art images for content and style learning
     image_shape = [1, 224, 224, 3]
     noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
-    photo = utils.load_image(photo_path).reshape(image_shape).astype(np.float32)
-    art = utils.load_image(art_path).reshape(image_shape).astype(np.float32)
+    photo = utils.load_image(input_path).reshape(image_shape).astype(np.float32)
+    art = utils.load_image(style_path).reshape(image_shape).astype(np.float32)
 
     # VGG Networks Init
     with tf.name_scope('vgg_photo'):
@@ -139,5 +157,5 @@ with tf.Session() as sess:
 
     # FIN
     print("Training complete. Rendering final image and closing TensorFlow session..")
-    render_img(sess, noise.eval())
+    save_img(sess, noise.eval())
     sess.close()
