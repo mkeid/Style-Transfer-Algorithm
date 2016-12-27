@@ -7,7 +7,6 @@ import numpy as np
 import tensorflow as tf
 import utils
 from scipy.misc import toimage
-import scipy.ndimage
 
 # Model Hyper Params
 content_layer = 'conv4_2'
@@ -49,56 +48,56 @@ def convert_to_gram(filter_maps):
         return tf.matmul(reshaped_maps, reshaped_maps, transpose_b=True)
 
 
-# Given the photo activation filter maps of the photo and the generated image, return the content loss
-def get_content_loss(x, p):
+# Compute the content loss given a variable image (x) and a content image (c)
+def get_content_loss(x, c):
     with tf.name_scope('get_content_loss'):
         # Get the activated VGG feature maps
         content_noise_out = getattr(x, content_layer)
-        content_photo_out = getattr(p, content_layer)
+        content_photo_out = getattr(c, content_layer)
 
         # Compute and return the content loss term as the mean squared error
         sum_of_squared_diffs = tf.reduce_sum(tf.square(tf.sub(content_noise_out, content_photo_out)))
         return tf.mul(0.5, sum_of_squared_diffs)
 
 
-# Compute style loss
-def get_style_loss(x, a):
+# Compute style loss given a variable image (x) and a style image (s)
+def get_style_loss(x, s):
     with tf.name_scope('get_style_loss'):
-        style_layer_losses = [(get_style_loss_for_layer(x, a, l)) for l in style_layers]
+        style_layer_losses = [(get_style_loss_for_layer(x, s, l)) for l in style_layers]
         style_weights = tf.constant([0.2] * len(style_layer_losses), tf.float32)
         weighted_layer_losses = tf.mul(style_weights, tf.convert_to_tensor(style_layer_losses))
         return tf.reduce_sum(weighted_layer_losses)
 
 
-# Compute the norm of a given image
+# Compute the norm of a given image (x)
 def get_norm(x):
     summed_terms = tf.reduce_sum(tf.pow(x, norm_term))
     return tf.pow(summed_terms, 1 / norm_term)
 
 
-# Compute style loss for a given layer
-def get_style_loss_for_layer(x, a, l):
+# Compute style loss for a layer (l) given the variable image (x) and the style image (s)
+def get_style_loss_for_layer(x, s, l):
     with tf.name_scope('get_style_loss_for_layer'):
         # Compute gram matrices using the activated filter maps of the art and generated images
         x_layer_maps = getattr(x, l)
-        a_layer_maps = getattr(a, l)
+        s_layer_maps = getattr(s, l)
         x_layer_gram = convert_to_gram(x_layer_maps)
-        a_layer_gram = convert_to_gram(a_layer_maps)
+        s_layer_gram = convert_to_gram(s_layer_maps)
 
         # Make sure the feature map dimensions are the same
-        assert_equal_shapes = tf.assert_equal(x_layer_maps.get_shape(), a_layer_maps.get_shape())
+        assert_equal_shapes = tf.assert_equal(x_layer_maps.get_shape(), s_layer_maps.get_shape())
         with tf.control_dependencies([assert_equal_shapes]):
             # Compute the gram loss using the gram matrices
             style_layer_shape = x_layer_maps.get_shape().as_list()
             style_layer_elements = ((style_layer_shape[1] * style_layer_shape[2]) ** 2) * (style_layer_shape[3] ** 2)
             style_fraction = 1.0 / (4.0 * style_layer_elements)
-            gram_loss = tf.reduce_sum(tf.square(tf.sub(x_layer_gram, a_layer_gram)))
+            gram_loss = tf.reduce_sum(tf.square(tf.sub(x_layer_gram, s_layer_gram)))
 
             # Compute the end layer loss as the weighted gram loss
             return tf.mul(style_fraction, gram_loss)
 
 
-# Compute total variation regularization loss term
+# Compute total variation regularization loss term given a variable image (x) and its shape
 def get_total_variation(x, shape):
     with tf.name_scope('get_total_variation'):
         # Get the dimensions of the variable image
@@ -113,16 +112,16 @@ def get_total_variation(x, shape):
         return tf.reduce_sum(smoothed_summed_terms)
 
 
-# Render the generated image given the session and image variable
-def render_img(s, x):
+# Render the generated image given a tensorflow session and a variable image (x)
+def render_img(session, x):
     shape = x.get_shape().as_list()
-    toimage(np.reshape(s.run(x), shape[1:])).show()
+    toimage(np.reshape(session.run(x), shape[1:])).show()
 
 
-# Save the generated image given the session and image variable
-def save_img(s, x):
+# Save the generated image given a tensorflow session and variable image (x)
+def save_img(session, x):
     shape = x.get_shape().as_list()
-    toimage(np.reshape(s.run(x), shape[1:])).save(out_path)
+    toimage(np.reshape(session.run(x), shape[1:])).save(out_path)
 
 
 with tf.Session() as sess:
@@ -140,13 +139,13 @@ with tf.Session() as sess:
     noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
 
     # VGG Networks Init
-    with tf.name_scope('vgg_photo'):
-        photo_model = vgg19.Vgg19()
-        photo_model.build(photo, image_shape[1:])
+    with tf.name_scope('vgg_content'):
+        content_model = vgg19.Vgg19()
+        content_model.build(photo, image_shape[1:])
 
-    with tf.name_scope('vgg_art'):
-        art_model = vgg19.Vgg19()
-        art_model.build(art, image_shape[1:])
+    with tf.name_scope('vgg_style'):
+        style_model = vgg19.Vgg19()
+        style_model.build(art, image_shape[1:])
 
     with tf.name_scope('vgg_x'):
         x_model = vgg19.Vgg19()
@@ -154,8 +153,8 @@ with tf.Session() as sess:
 
     # Loss functions
     with tf.name_scope('loss'):
-        weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, photo_model))
-        weighted_style_loss = tf.mul(style_weight, get_style_loss(x_model, art_model))
+        weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, content_model))
+        weighted_style_loss = tf.mul(style_weight, get_style_loss(x_model, style_model))
         weighted_norm_loss = tf.mul(norm_weight, get_norm(noise))
         weighted_total_variation_loss = tf.mul(total_variation_weight, get_total_variation(noise, image_shape))
         total_loss = weighted_content_loss + weighted_style_loss + weighted_norm_loss + weighted_total_variation_loss
