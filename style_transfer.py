@@ -11,16 +11,16 @@ from scipy.misc import toimage
 # Model Hyper Params
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
-epochs = 20000
+epochs = 1000
 learning_rate = 0.01
 total_variation_smoothing = 1.5
 norm_term = 6.0
 
 # Loss term weights
-content_weight = 0.001
+content_weight = .001
 style_weight = 1.0
-norm_weight = 0.1
-total_variation_weight = 0.1
+norm_weight = 0.001
+tv_weight = 0.01
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -57,13 +57,13 @@ def get_content_loss(x, c):
 
         # Compute and return the content loss term as the mean squared error
         sum_of_squared_diffs = tf.reduce_sum(tf.square(tf.sub(content_noise_out, content_photo_out)))
-        return tf.mul(0.5, sum_of_squared_diffs)
+        return 0.5 * sum_of_squared_diffs
 
 
 # Compute style loss given a variable image (x) and a style image (s)
 def get_style_loss(x, s):
     with tf.name_scope('get_style_loss'):
-        style_layer_losses = [(get_style_loss_for_layer(x, s, l)) for l in style_layers]
+        style_layer_losses = [get_style_loss_for_layer(x, s, l) for l in style_layers]
         style_weights = tf.constant([0.2] * len(style_layer_losses), tf.float32)
         weighted_layer_losses = tf.mul(style_weights, tf.convert_to_tensor(style_layer_losses))
         return tf.reduce_sum(weighted_layer_losses)
@@ -72,7 +72,7 @@ def get_style_loss(x, s):
 # Compute the norm of a given image (x)
 def get_norm(x):
     summed_terms = tf.reduce_sum(tf.pow(x, norm_term))
-    return tf.pow(summed_terms, 1 / norm_term)
+    return tf.pow(summed_terms, 1.0 / norm_term)
 
 
 # Compute style loss for a layer (l) given the variable image (x) and the style image (s)
@@ -91,10 +91,10 @@ def get_style_loss_for_layer(x, s, l):
             style_layer_shape = x_layer_maps.get_shape().as_list()
             style_layer_elements = ((style_layer_shape[1] * style_layer_shape[2]) ** 2) * (style_layer_shape[3] ** 2)
             style_fraction = 1.0 / (4.0 * style_layer_elements)
-            gram_loss = tf.reduce_sum(tf.square(tf.sub(x_layer_gram, s_layer_gram)))
+            gram_loss = tf.reduce_sum(tf.square(x_layer_gram - s_layer_gram))
 
             # Compute the end layer loss as the weighted gram loss
-            return tf.mul(style_fraction, gram_loss)
+            return style_fraction * gram_loss
 
 
 # Compute total variation regularization loss term given a variable image (x) and its shape
@@ -109,7 +109,7 @@ def get_total_variation(x, shape):
         left_term = tf.square(x[:, 1:, :width - 1, :] - x_cropped)
         right_term = tf.square(x[:, :height - 1, 1:, :] - x_cropped)
         smoothed_summed_terms = tf.pow(tf.add(left_term, right_term), tf.div(total_variation_smoothing, 2))
-        return tf.reduce_sum(smoothed_summed_terms)
+        return tf.pow(tf.reduce_sum(smoothed_summed_terms), 0.5)
 
 
 # Render the generated image given a tensorflow session and a variable image (x)
@@ -153,11 +153,36 @@ with tf.Session() as sess:
 
     # Loss functions
     with tf.name_scope('loss'):
-        weighted_content_loss = tf.mul(content_weight, get_content_loss(x_model, content_model))
-        weighted_style_loss = tf.mul(style_weight, get_style_loss(x_model, style_model))
-        weighted_norm_loss = tf.mul(norm_weight, get_norm(noise))
-        weighted_total_variation_loss = tf.mul(total_variation_weight, get_total_variation(noise, image_shape))
-        total_loss = weighted_content_loss + weighted_style_loss + weighted_norm_loss + weighted_total_variation_loss
+        # Content
+        if content_weight is 0:
+            content_loss = tf.constant(0.)
+        else:
+            content_loss = get_content_loss(x_model, content_model)
+        weighted_content_loss = content_weight * content_loss
+
+        # Style
+        if style_weight is 0:
+            style_loss = tf.constant(0.)
+        else:
+            style_loss = get_style_loss(x_model, style_model)
+        weighted_style_loss = style_weight * style_loss
+
+        # Norm regularization
+        if norm_weight is 0:
+            norm_loss = tf.constant(0.)
+        else:
+            norm_loss = get_norm(noise)
+        weighted_norm_loss = norm_weight * norm_loss
+
+        # Total variation denoising
+        if tv_weight is 0:
+            tv_loss = tf.constant(0.)
+        else:
+            tv_loss = get_total_variation(noise, image_shape)
+        weighted_tv_loss = tv_weight * tv_loss
+
+        # Total loss
+        total_loss = tf.sqrt(weighted_content_loss + weighted_style_loss + weighted_norm_loss + weighted_tv_loss)
 
     # Update image
     with tf.name_scope('update_image'):
@@ -170,8 +195,8 @@ with tf.Session() as sess:
     print("Initializing variables and beginning training..")
     sess.run(tf.initialize_all_variables())
     for i in range(epochs):
-        if i % 100 == 0:
-            print("Epoch %d | Total Error is %s" % (i, sess.run(total_loss)))
+        if i % 250 == 0:
+            print("Epoch %04d | Total Error is %s" % (i, sess.run(total_loss)))
             render_img(sess, noise)
         sess.run(update_image)
 
