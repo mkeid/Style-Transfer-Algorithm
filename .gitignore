@@ -7,3 +7,4 @@ __init__.py
 *$py.class
 *.idea
 vgg19.npy
+out.jpg

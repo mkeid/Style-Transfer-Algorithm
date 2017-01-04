@@ -13,7 +13,7 @@ from scipy.misc import toimage
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 epochs = 1000
-learning_rate = .03
+learning_rate = .01
 total_variation_smoothing = 1.5
 norm_term = 6.
 
@@ -27,13 +27,13 @@ tv_weight = 50.
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", default='photo.jpg', help="path to the input image you would like to apply the style to")
 parser.add_argument("--style", default='art.jpg', help="path to the image to be used as the style for the input image")
-parser.add_argument("--output", default='./', help="path to where the image with the applied style will be created")
+parser.add_argument("--out", default='out.jpg', help="path to where the image with the applied style will be created")
 args = parser.parse_args()
 
 # Assign image paths from the arg parsing
 input_path = args.input
 style_path = args.style
-out_path = args.output
+out_path = args.out
 
 
 # Given an activated filter maps of any particular layer, return its respected gram matrix
@@ -111,15 +111,11 @@ def get_total_variation(x, shape):
 
 
 # Render the generated image given a tensorflow session and a variable image (x)
-def render_img(session, x):
+def render_img(session, x, save=False):
     shape = x.get_shape().as_list()
     toimage(np.reshape(session.run(x), shape[1:])).show()
-
-
-# Save the generated image given a tensorflow session and variable image (x)
-def save_img(session, x):
-    shape = x.get_shape().as_list()
-    toimage(np.reshape(session.run(x), shape[1:])).save(out_path)
+    if save:
+        toimage(np.reshape(session.run(x), shape[1:])).save(out_path)
 
 
 with tf.Session() as sess:
@@ -134,7 +130,7 @@ with tf.Session() as sess:
     art = art.reshape(image_shape).astype(np.float32)
 
     # Initialize the variable image that will become our final output as random noise
-    noise = tf.Variable(tf.random_uniform(image_shape, minval=0, maxval=1))
+    noise = tf.Variable(tf.truncated_normal(image_shape, mean=.5, stddev=.1))
 
     # VGG Networks Init
     with tf.name_scope('vgg_content'):
@@ -196,5 +192,5 @@ with tf.Session() as sess:
 
     # FIN
     print("Training complete. Rendering final image and closing TensorFlow session..")
-    save_img(sess, noise.eval())
+    render_img(sess, noise, save=True)
     sess.close()
