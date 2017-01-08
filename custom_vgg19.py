@@ -78,18 +78,6 @@ class Vgg19:
         self.conv5_2 = self.conv_layer(self.conv5_1, "conv5_2")
         self.conv5_3 = self.conv_layer(self.conv5_2, "conv5_3")
         self.conv5_4 = self.conv_layer(self.conv5_3, "conv5_4")
-        self.pool5 = self.avg_pool(self.conv5_4, 'pool5')
-
-        self.fc6 = self.fc_layer(self.pool5, "fc6")
-        assert self.fc6.get_shape().as_list()[1:] == [4096]
-        self.relu6 = tf.nn.relu(self.fc6)
-
-        self.fc7 = self.fc_layer(self.relu6, "fc7")
-        self.relu7 = tf.nn.relu(self.fc7)
-
-        self.fc8 = self.fc_layer(self.relu7, "fc8")
-
-        self.prob = tf.nn.softmax(self.fc8, name="prob")
 
         self.data_dict = None
 

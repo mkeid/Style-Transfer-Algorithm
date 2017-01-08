@@ -4,6 +4,7 @@
 import argparse
 import custom_vgg19 as vgg19
 import numpy as np
+import os
 import tensorflow as tf
 import utils
 from functools import reduce
@@ -12,22 +13,28 @@ from scipy.misc import toimage
 # Model Hyper Params
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
-epochs = 1000
-learning_rate = .01
+epochs = 300
+learning_rate = .02
 total_variation_smoothing = 1.5
 norm_term = 6.
 
 # Loss term weights
 content_weight = 1.
-style_weight = 100.
+style_weight = 10.
 norm_weight = 25.
-tv_weight = 50.
+tv_weight = 1.
+
+# Default image paths
+dir_path = os.path.dirname(os.path.realpath(__file__))
+input_path = dir_path + '/photo.jpg'
+style_path = dir_path + '/art.jpg'
+out_path = dir_path + '/out.jpg'
 
 # Parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--input", default='photo.jpg', help="path to the input image you would like to apply the style to")
-parser.add_argument("--style", default='art.jpg', help="path to the image to be used as the style for the input image")
-parser.add_argument("--out", default='out.jpg', help="path to where the image with the applied style will be created")
+parser.add_argument("--input", default=input_path, help="path to the input image you would like to apply the style to")
+parser.add_argument("--style", default=style_path, help="path to the image to be used as the style for the input image")
+parser.add_argument("--out", default=out_path, help="path to where the image with the applied style will be created")
 args = parser.parse_args()
 
 # Assign image paths from the arg parsing
@@ -113,9 +120,10 @@ def get_total_variation(x, shape):
 # Render the generated image given a tensorflow session and a variable image (x)
 def render_img(session, x, save=False):
     shape = x.get_shape().as_list()
-    toimage(np.reshape(session.run(x), shape[1:])).show()
+    img = np.clip(session.run(x), 0, 1)
+    toimage(np.reshape(img, shape[1:])).show()
     if save:
-        toimage(np.reshape(session.run(x), shape[1:])).save(out_path)
+        toimage(np.reshape(img, shape[1:])).save(out_path)
 
 
 with tf.Session() as sess:
@@ -176,7 +184,7 @@ with tf.Session() as sess:
 
     # Update image
     with tf.name_scope('update_image'):
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+        optimizer = tf.train.AdamOptimizer(learning_rate)
         grads = optimizer.compute_gradients(total_loss, [noise])
         clipped_grads = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in grads]
         update_image = optimizer.apply_gradients(clipped_grads)
@@ -185,8 +193,8 @@ with tf.Session() as sess:
     print("Initializing variables and beginning training..")
     sess.run(tf.initialize_all_variables())
     for i in range(epochs):
-        if i % 250 == 0:
-            print("Epoch %04d | Total Error is %.4f" % (i, sess.run(total_loss)))
+        if i % 100 == 0:
+            print("Epoch %04d | Loss %.03f" % (i, sess.run(total_loss)))
             render_img(sess, noise)
         sess.run(update_image)
 
