@@ -17,16 +17,16 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
     <th>Result</th>
   </tr>
   <tr>
-    <td><img src="./images/style/great-wave-of-kanagawa.jpg" width="50%"></td>
-    <td><img src="./images/examples/example_great_wave_of_kanagawa.jpg" width=50%"></td> 
+    <td><img src="./images/style/great-wave-of-kanagawa.jpg" width="100%"></td>
+    <td><img src="./images/examples/example_great_wave_of_kanagawa.jpg" width=100%"></td> 
   </tr>
   <tr>
-    <td><img src="./images/style/starry-night.jpg" width="50%"></td>
-    <td><img src="./images/examples/example_starry-night.jpg" width="50%"></td> 
+    <td><img src="./images/style/starry-night.jpg" width="100%"></td>
+    <td><img src="./images/examples/example_starry-night.jpg" width="100%"></td> 
   </tr>
   <tr>
-    <td><img src="./images/style/scream.jpg" width="50%"></td>
-    <td><img src="./images/examples/example_scream.jpg" width="50%"></td> 
+    <td><img src="./images/style/scream.jpg" width="100%"></td>
+    <td><img src="./images/examples/example_scream.jpg" width="100%"></td> 
   </tr>
 </table>
 
