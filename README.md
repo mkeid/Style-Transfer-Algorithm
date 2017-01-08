@@ -6,6 +6,30 @@ Using this implementation, we were able to emulate and achieve the same stylisti
 
 The purpose of this repository is to port the joint [texture-synthesizing](https://arxiv.org/pdf/1505.07376v3.pdf) and [representation-inverting](https://arxiv.org/pdf/1412.0035v1.pdf) stylistic-transfer algorithm to TensorFlow.
 
+## Results
+
+#### Input
+<img src="./images/content/nyc.jpg" height="480" width="640">
+
+<table style="width:100%">
+  <tr>
+    <th>Style</th> 
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td><img src="./images/style/great-wave-of-kanagawa.jpg" height="480" width="640"></td>
+    <td><img src="./images/examples/example_great-wave-of-kanagawa.jpg" height="480" width="640"></td> 
+  </tr>
+  <tr>
+    <td><img src="./images/style/starry-night.jpg" height="480" width="640"></td>
+    <td><img src="./images/examples/example_starry-night.jpg" height="480" width="640"></td> 
+  </tr>
+  <tr>
+    <td><img src="./images/style/scream.jpg" height="480" width="640"></td>
+    <td><img src="./images/examples/example_scream.jpg" height="480" width="640"></td> 
+  </tr>
+</table>
+
 ## Prerequisites
 
 * [Python 3.5](https://www.python.org/downloads/release/python-350/)

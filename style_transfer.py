@@ -20,15 +20,15 @@ norm_term = 6.
 
 # Loss term weights
 content_weight = 1.
-style_weight = 10.
-norm_weight = 25.
-tv_weight = 1.
+style_weight = 10
+norm_weight = 0
+tv_weight = 0
 
 # Default image paths
 dir_path = os.path.dirname(os.path.realpath(__file__))
-input_path = dir_path + '/photo.jpg'
-style_path = dir_path + '/art.jpg'
-out_path = dir_path + '/out.jpg'
+input_path = dir_path + '/images/content/nyc.jpg'
+style_path = dir_path + '/images/style/great-wave-of-kanagawa.jpg'
+out_path = 'out.jpg'
 
 # Parse arguments
 parser = argparse.ArgumentParser()
