@@ -9,7 +9,7 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
 ## Results
 
 #### Input
-<img src="./images/content/nyc.jpg" height="480" width="640">
+<img src="./images/content/nyc.jpg" width="50%">
 
 <table style="width:100%">
   <tr>
@@ -17,16 +17,16 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
     <th>Result</th>
   </tr>
   <tr>
-    <td><img src="./images/style/great-wave-of-kanagawa.jpg" height="480" width="640"></td>
-    <td><img src="./images/examples/example_great-wave-of-kanagawa.jpg" height="480" width="640"></td> 
+    <td><img src="./images/style/great-wave-of-kanagawa.jpg" width="50%"></td>
+    <td><img src="./images/examples/example_great_wave_of_kanagawa.jpg" width=50%"></td> 
   </tr>
   <tr>
-    <td><img src="./images/style/starry-night.jpg" height="480" width="640"></td>
-    <td><img src="./images/examples/example_starry-night.jpg" height="480" width="640"></td> 
+    <td><img src="./images/style/starry-night.jpg" width="50%"></td>
+    <td><img src="./images/examples/example_starry-night.jpg" width="50%"></td> 
   </tr>
   <tr>
-    <td><img src="./images/style/scream.jpg" height="480" width="640"></td>
-    <td><img src="./images/examples/example_scream.jpg" height="480" width="640"></td> 
+    <td><img src="./images/style/scream.jpg" width="50%"></td>
+    <td><img src="./images/examples/example_scream.jpg" width="50%"></td> 
   </tr>
 </table>
 
