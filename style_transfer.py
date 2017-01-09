@@ -20,9 +20,9 @@ norm_term = 6.
 
 # Loss term weights
 content_weight = 1.
-style_weight = 10
-norm_weight = 0
-tv_weight = 0
+style_weight = 10.
+norm_weight = .1
+tv_weight = .1
 
 # Default image paths
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -121,9 +121,11 @@ def get_total_variation(x, shape):
 def render_img(session, x, save=False):
     shape = x.get_shape().as_list()
     img = np.clip(session.run(x), 0, 1)
-    toimage(np.reshape(img, shape[1:])).show()
+
     if save:
         toimage(np.reshape(img, shape[1:])).save(out_path)
+    else:
+        toimage(np.reshape(img, shape[1:])).show()
 
 
 with tf.Session() as sess:
@@ -195,7 +197,6 @@ with tf.Session() as sess:
     for i in range(epochs):
         if i % 100 == 0:
             print("Epoch %04d | Loss %.03f" % (i, sess.run(total_loss)))
-            render_img(sess, noise)
         sess.run(update_image)
 
     # FIN
