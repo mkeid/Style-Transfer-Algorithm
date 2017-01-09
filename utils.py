@@ -1,8 +1,10 @@
 import skimage
 import skimage.io
 import skimage.transform
+from scipy.misc import toimage
 
 
+#
 def load_image(path):
     # Load image [height, width, depth]
     img = skimage.io.imread(path) / 255.0
@@ -19,6 +21,7 @@ def load_image(path):
     return resized_img, shape
 
 
+#
 def load_image2(path, height=None, width=None):
     # Load image
     img = skimage.io.imread(path) / 255.0
@@ -35,3 +38,14 @@ def load_image2(path, height=None, width=None):
         ny = img.shape[0]
         nx = img.shape[1]
     return skimage.transform.resize(img, (ny, nx))
+
+
+# Render the generated image given a tensorflow session and a variable image (x)
+def render_img(session, x, save=False):
+    shape = x.get_shape().as_list()
+    img = np.clip(session.run(x), 0, 1)
+
+    if save:
+        toimage(np.reshape(img, shape[1:])).save(out_path)
+    else:
+        toimage(np.reshape(img, shape[1:])).show()

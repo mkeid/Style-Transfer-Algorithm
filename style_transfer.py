@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # Mohamed K. Eid (mohamedkeid@gmail.com)
+# Description: TensorFlow implmentation of "A Neural Algorithm of Artistic Style" using TV denoising as a regularizer.
 
 import argparse
 import custom_vgg19 as vgg19
@@ -8,7 +9,6 @@ import os
 import tensorflow as tf
 import utils
 from functools import reduce
-from scipy.misc import toimage
 
 # Model Hyper Params
 content_layer = 'conv4_2'
@@ -29,18 +29,6 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 input_path = dir_path + '/images/content/nyc.jpg'
 style_path = dir_path + '/images/style/great-wave-of-kanagawa.jpg'
 out_path = 'out.jpg'
-
-# Parse arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("--input", default=input_path, help="path to the input image you would like to apply the style to")
-parser.add_argument("--style", default=style_path, help="path to the image to be used as the style for the input image")
-parser.add_argument("--out", default=out_path, help="path to where the image with the applied style will be created")
-args = parser.parse_args()
-
-# Assign image paths from the arg parsing
-input_path = args.input
-style_path = args.style
-out_path = args.out
 
 
 # Given an activated filter maps of any particular layer, return its respected gram matrix
@@ -117,26 +105,32 @@ def get_total_variation(x, shape):
         return tf.reduce_sum(smoothed_terms) / size
 
 
-# Render the generated image given a tensorflow session and a variable image (x)
-def render_img(session, x, save=False):
-    shape = x.get_shape().as_list()
-    img = np.clip(session.run(x), 0, 1)
+# Parse arguments and assign them to their respective global variables
+def parse_args():
+    global input_path, style_path, out_path
 
-    if save:
-        toimage(np.reshape(img, shape[1:])).save(out_path)
-    else:
-        toimage(np.reshape(img, shape[1:])).show()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", default=input_path, help="path to the input image you'd like to apply the style to")
+    parser.add_argument("--style", default=style_path, help="path to the image you'd like to reference the style from")
+    parser.add_argument("--out", default=out_path, help="path to where the styled image will be created")
+    args = parser.parse_args()
+
+    # Assign image paths from the arg parsing
+    input_path = args.input
+    style_path = args.style
+    out_path = args.out
 
 
 with tf.Session() as sess:
+    parse_args()
+
     # Initialize and process photo image to be used for our content
     photo, image_shape = utils.load_image(input_path)
     image_shape = [1] + image_shape
     photo = photo.reshape(image_shape).astype(np.float32)
 
     # Initialize and process art image to be used for our style
-    art, art_shape = utils.load_image(style_path)
-    assert [1] + art_shape == image_shape, "Both the input and style images must be the same shape."
+    art = utils.load_image2(style_path, width=image_shape[1], height=image_shape[2])
     art = art.reshape(image_shape).astype(np.float32)
 
     # Initialize the variable image that will become our final output as random noise
@@ -201,5 +195,5 @@ with tf.Session() as sess:
 
     # FIN
     print("Training complete. Rendering final image and closing TensorFlow session..")
-    render_img(sess, noise, save=True)
+    utils.render_img(sess, noise, save=True)
     sess.close()

@@ -1,6 +1,6 @@
 # Style-Transfer-Algorithm implemented in TensorFlow
 
-This is a TensorFlow implmentation of [*A Neural Algorithm of Artistic Style*](https://arxiv.org/pdf/1508.06576v2.pdf) using [total variation denoising](http://eeweb.poly.edu/iselesni/lecture_notes/TVDmm/TVDmm.pdf) as a regularizer. We used a pretrained [VGG network](https://arxiv.org/pdf/1409.1556.pdf), which is provided [here](https://github.com/machrisaa/tensorflow-vgg) by [machrisaa](https://github.com/machrisaa) on GitHub. The VGG implementation was customized to accomodate our requirements and is of the 19-layer variety.
+This is a TensorFlow implementation of [*A Neural Algorithm of Artistic Style*](https://arxiv.org/pdf/1508.06576v2.pdf) using [total variation denoising](http://eeweb.poly.edu/iselesni/lecture_notes/TVDmm/TVDmm.pdf) as a regularizer. We used a pretrained [VGG network](https://arxiv.org/pdf/1409.1556.pdf), which is provided [here](https://github.com/machrisaa/tensorflow-vgg) by [machrisaa](https://github.com/machrisaa) on GitHub. The VGG implementation was customized to accomodate our requirements and is of the 19-layer variety.
 
 Using this implementation, we were able to emulate and achieve the same stylistic results as those in the original paper.
 
