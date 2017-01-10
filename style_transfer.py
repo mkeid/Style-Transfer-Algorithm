@@ -195,5 +195,5 @@ with tf.Session() as sess:
 
     # FIN
     print("Training complete. Rendering final image and closing TensorFlow session..")
-    utils.render_img(sess, noise, save=True)
+    utils.render_img(sess, noise, save=True, out_path=out_path)
     sess.close()
