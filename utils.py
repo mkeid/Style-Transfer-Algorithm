@@ -5,7 +5,7 @@ import skimage.transform
 from scipy.misc import toimage
 
 
-#
+# Return a numpy array of an image specified by its path
 def load_image(path):
     # Load image [height, width, depth]
     img = skimage.io.imread(path) / 255.0
@@ -22,7 +22,7 @@ def load_image(path):
     return resized_img, shape
 
 
-#
+# Return a resized numpy array of an image specified by its path
 def load_image2(path, height=None, width=None):
     # Load image
     img = skimage.io.imread(path) / 255.0

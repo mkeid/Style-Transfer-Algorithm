@@ -20,7 +20,7 @@ norm_term = 6.
 
 # Loss term weights
 content_weight = 1.
-style_weight = 10.
+style_weight = 3.
 norm_weight = .1
 tv_weight = .1
 
@@ -130,7 +130,7 @@ with tf.Session() as sess:
     photo = photo.reshape(image_shape).astype(np.float32)
 
     # Initialize and process art image to be used for our style
-    art = utils.load_image2(style_path, width=image_shape[1], height=image_shape[2])
+    art = utils.load_image2(style_path, height=image_shape[1], width=image_shape[2])
     art = art.reshape(image_shape).astype(np.float32)
 
     # Initialize the variable image that will become our final output as random noise
