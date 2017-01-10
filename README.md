@@ -34,7 +34,7 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
 
 * [Python 3.5](https://www.python.org/downloads/release/python-350/)
 * [TensorFlow](https://www.tensorflow.org/) (>= r0.12)
-* [SciPy](https://www.scipy.org/)
+* [scikit-image](http://scikit-image.org/docs/dev/api/skimage.html)
 * [NumPy](http://www.numpy.org/)
 
 ## Usage
