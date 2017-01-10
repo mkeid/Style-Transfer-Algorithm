@@ -1,4 +1,4 @@
-# Style-Transfer-Algorithm implemented in TensorFlow
+# *Style-Transfer-Algorithm* implemented in TensorFlow
 
 This is a TensorFlow implementation of [*A Neural Algorithm of Artistic Style*](https://arxiv.org/pdf/1508.06576v2.pdf) using [total variation denoising](http://eeweb.poly.edu/iselesni/lecture_notes/TVDmm/TVDmm.pdf) as a regularizer. We used a pretrained [VGG network](https://arxiv.org/pdf/1409.1556.pdf), which is provided [here](https://github.com/machrisaa/tensorflow-vgg) by [machrisaa](https://github.com/machrisaa) on GitHub. The VGG implementation was customized to accomodate our requirements and is of the 19-layer variety.
 
@@ -9,7 +9,7 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
 ## Results
 
 #### Input
-<img src="./images/content/nyc.jpg" width="50%">
+<img src="./lib/images/content/nyc.jpg" width="50%">
 
 <table style="width:100%">
   <tr>
@@ -17,16 +17,16 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
     <th>Result</th>
   </tr>
   <tr>
-    <td><img src="./images/style/great-wave-of-kanagawa.jpg" width="100%"></td>
-    <td><img src="./images/examples/example_great_wave_of_kanagawa.jpg" width=100%"></td> 
+    <td><img src="./lib/images/style/great-wave-of-kanagawa.jpg" width="100%"></td>
+    <td><img src="./lib/images/examples/example_great_wave_of_kanagawa.jpg" width=100%"></td> 
   </tr>
   <tr>
-    <td><img src="./images/style/starry-night.jpg" width="100%"></td>
-    <td><img src="./images/examples/example_starry-night.jpg" width="100%"></td> 
+    <td><img src="./lib/images/style/starry-night.jpg" width="100%"></td>
+    <td><img src="./lib/images/examples/example_starry-night.jpg" width="100%"></td> 
   </tr>
   <tr>
-    <td><img src="./images/style/scream.jpg" width="100%"></td>
-    <td><img src="./images/examples/example_scream.jpg" width="100%"></td> 
+    <td><img src="./lib/images/style/scream.jpg" width="100%"></td>
+    <td><img src="./lib/images/examples/example_scream.jpg" width="100%"></td> 
   </tr>
 </table>
 

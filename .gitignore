@@ -2,9 +2,7 @@ deprecated
 *.npy
 *.pyc
 __pycache__/
-__init__.py
 *.py[cod]
 *$py.class
 *.idea
-vgg19.npy
-out.jpg
+.DS_Store

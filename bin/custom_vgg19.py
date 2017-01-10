@@ -6,7 +6,8 @@ import urllib.request
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 data = None
-weights_name = "vgg19.npy"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+weights_name = dir_path + "/../lib/weights/vgg19.npy"
 weights_url = "https://www.dropbox.com/s/68opci8420g7bcl/vgg19.npy?dl=1"
 
 
