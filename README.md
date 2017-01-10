@@ -57,7 +57,7 @@ The default paths for input, style, and output are "photo.jpg", "art.jpg", and "
     
     A modified implementation of the VGG 19 network. This particular customization changes the default pooling of max pooling to average pooling, which allows more effective gradient flow.
 
-* [vgg19.npy](https://mega.nz/#!xZ8glS6J!MAnE91ND_WyfZ_8mvkuSa2YcA7q-1ehfSm-Q1fxOvvs)
+* [vgg19.npy](https://www.dropbox.com/s/68opci8420g7bcl/vgg19.npy?dl=1)
 
     The weights used by the VGG network. This file is not in this repository due to its size. You must download it and place in the working directory. The program will complain and ask for you to download it with a supplied link if it does not find it.
     

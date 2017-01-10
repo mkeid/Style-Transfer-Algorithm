@@ -2,10 +2,12 @@ import os
 import tensorflow as tf
 import numpy as np
 import inspect
+import urllib.request
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 data = None
-weights_path = "https://mega.nz/#!xZ8glS6J!MAnE91ND_WyfZ_8mvkuSa2YcA7q-1ehfSm-Q1fxOvvs"
+weights_name = "vgg19.npy"
+weights_url = "https://www.dropbox.com/s/68opci8420g7bcl/vgg19.npy?dl=1"
 
 
 class Vgg19:
@@ -15,14 +17,25 @@ class Vgg19:
         if vgg19_npy_path is None:
             path = inspect.getfile(Vgg19)
             path = os.path.abspath(os.path.join(path, os.pardir))
-            path = os.path.join(path, "vgg19.npy")
+            path = os.path.join(path, weights_name)
 
             if os.path.exists(path):
                 vgg19_npy_path = path
             else:
-                print("VGG19 weights were not found in the project directory. Please download the .npy file from:")
-                print(weights_path)
-                exit(1)
+                print("VGG19 weights were not found in the project directory")
+
+                answer = 0
+                while answer is not 'y' and answer is not 'N':
+                    answer = input("Would you like to download the 548 MB file? [y/N] ").replace(" ", "")
+
+                # Download weights if yes, else exit the program
+                if answer == 'y':
+                    print("Downloading. Please be patient...")
+                    urllib.request.urlretrieve(weights_url, weights_name)
+                    vgg19_npy_path = path
+                elif answer == 'N':
+                    print("Exiting the program..")
+                    exit(0)
 
         if data is None:
             data = np.load(vgg19_npy_path, encoding='latin1')
