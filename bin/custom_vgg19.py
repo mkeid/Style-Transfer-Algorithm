@@ -41,7 +41,7 @@ class Vgg19:
         if data is None:
             data = np.load(vgg19_npy_path, encoding='latin1')
             self.data_dict = data.item()
-            print("npy file loaded")
+            print("VGG19 weights loaded")
 
         else:
             self.data_dict = data.item()

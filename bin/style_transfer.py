@@ -11,14 +11,17 @@ import time
 import utils
 from functools import reduce
 
-# Model Hyper Params
+# Model hyperparams
 content_layer = 'conv4_2'
 style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 epochs = 300
 learning_rate = .02
 total_variation_smoothing = 1.5
 norm_term = 6.
+
+# Logging params
 print_training_status = True
+print_n = 100
 
 # Loss term weights
 content_weight = 1.
@@ -192,13 +195,12 @@ with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
     start_time = time.time()
     for i in range(epochs):
-        if print_training_status and i % 100 == 0:
-            print("Epoch %04d | Loss %.03f" % (i, sess.run(total_loss)))
-        sess.run(update_image)
+        _, loss = sess.run([update_image, total_loss])
+        if print_training_status and i % print_n == 0:
+            print("Epoch %04d | Loss %.03f" % (i, loss))
 
     # FIN
     elapsed = time.time() - start_time
     print("Training complete. The session took %.2f seconds to complete." % elapsed)
     print("Rendering final image and closing TensorFlow session..")
     utils.render_img(sess, noise, save=True, out_path=out_path)
-    sess.close()
