@@ -49,11 +49,11 @@ The default paths for input, style, and output are "photo.jpg", "art.jpg", and "
 
 ## Files
 
-* [style_transfer.py](style_transfer.py)
+* [style_transfer.py](bin/style_transfer.py)
 
     The main script where all the magic happens. 
 
-* [custom_vgg19.py](custom_vgg19.py)
+* [custom_vgg19.py](bin/custom_vgg19.py)
     
     A modified implementation of the VGG 19 network. This particular customization changes the default pooling of max pooling to average pooling, which allows more effective gradient flow.
 
@@ -61,6 +61,6 @@ The default paths for input, style, and output are "photo.jpg", "art.jpg", and "
 
     The weights used by the VGG network. This file is not in this repository due to its size. You must download it and place in the working directory. The program will complain and ask for you to download it with a supplied link if it does not find it.
     
-* [utils.py](utils.py)
+* [utils.py](bin/utils.py)
 
     Auxiliary routines for parsing images into numpy arrays used in the implementation.
