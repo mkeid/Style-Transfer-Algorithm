@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import skimage
 import skimage.io
 import skimage.transform

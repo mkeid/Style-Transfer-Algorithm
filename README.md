@@ -42,18 +42,18 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
 To stylize an image, run:
 
 ```sh
-python style_transfer.py --input path/to/input/image --style path/to/style/image --output path/to/output/image
+python style_transfer.py path/to/input/image path/to/style/image --output path/to/output/image
 ```
 
 The default paths for input, style, and output are "photo.jpg", "art.jpg", and "./" respectively.The first two files are supplied in this repository.
 
 ## Files
 
-* [style_transfer.py](bin/style_transfer.py)
+* [style_transfer.py](src/style_transfer.py)
 
     The main script where all the magic happens. 
 
-* [custom_vgg19.py](bin/custom_vgg19.py)
+* [custom_vgg19.py](src/custom_vgg19.py)
     
     A modified implementation of the VGG 19 network. This particular customization changes the default pooling of max pooling to average pooling, which allows more effective gradient flow.
 
@@ -61,6 +61,6 @@ The default paths for input, style, and output are "photo.jpg", "art.jpg", and "
 
     The weights used by the VGG network. This file is not in this repository due to its size. You must download it and place in the working directory. The program will complain and ask for you to download it with a supplied link if it does not find it.
     
-* [utils.py](bin/utils.py)
+* [utils.py](src/utils.py)
 
     Auxiliary routines for parsing images into numpy arrays used in the implementation.
