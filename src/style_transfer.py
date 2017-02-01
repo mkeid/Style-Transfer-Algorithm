@@ -14,7 +14,7 @@ from functools import reduce
 # Model hyperparams
 CONTENT_LAYER = 'conv4_2'
 STYLE_LAYERS = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
-EPOCHS = 0
+EPOCHS = 300
 LEARNING_RATE = .02
 TOTAL_VARIATION_SMOOTHING = 1.5
 NORM_TERM = 6.
@@ -204,6 +204,7 @@ with tf.Session() as sess:
     print("Rendering final image and closing TensorFlow session..")
 
     # Render the image after making sure the repo's dedicated output dir exists
-    if not os.path.isdir('../output/'):
-        os.makedirs('../output/')
+    out_dir = os.path.dirname(os.path.realpath(__file__)) + '/../output/'
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
     utils.render_img(sess, noise, save=True, out_path=OUT_PATH)
