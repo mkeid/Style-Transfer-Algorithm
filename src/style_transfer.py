@@ -70,7 +70,7 @@ def get_style_loss(x, s):
     with tf.name_scope('get_style_loss'):
         style_layer_losses = [get_style_loss_for_layer(x, s, l) for l in STYLE_LAYERS]
         style_weights = tf.constant([1. / len(style_layer_losses)] * len(style_layer_losses), tf.float32)
-        weighted_layer_losses = tf.mul(style_weights, tf.convert_to_tensor(style_layer_losses))
+        weighted_layer_losses = tf.multiply(style_weights, tf.convert_to_tensor(style_layer_losses))
         return tf.reduce_sum(weighted_layer_losses)
 
 
@@ -191,7 +191,7 @@ with tf.Session() as sess:
 
     # Train
     print("Initializing variables and beginning training..")
-    sess.run(tf.initialize_all_variables())
+    sess.run(tf.global_variables_initializer())
     start_time = time.time()
     for i in range(EPOCHS):
         _, loss = sess.run([update_image, total_loss])
