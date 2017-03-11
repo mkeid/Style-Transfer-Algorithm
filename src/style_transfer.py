@@ -4,6 +4,7 @@
 
 import argparse
 import custom_vgg19 as vgg19
+import logging
 import numpy as np
 import os
 import tensorflow as tf
@@ -25,14 +26,22 @@ STYLE_WEIGHT = 3.
 NORM_WEIGHT = .1
 TV_WEIGHT = .1
 
-# Logging params
-PRINT_TRAINING_STATUS = True
-PRINT_N = 100
-
 # Default image paths
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 OUT_PATH = DIR_PATH + '/../output/out_%.0f.jpg' % time.time()
 INPUT_PATH, STYLE_PATH = None, None
+
+# Logging params
+PRINT_TRAINING_STATUS = True
+PRINT_N = 100
+
+# Logging config
+log_dir = DIR_PATH + '/../log/'
+if not os.path.isdir(log_dir):
+    os.makedirs(log_dir)
+    print('Directory "%s" was created for logging.' % log_dir)
+log_path = ''.join([log_dir, str(time.time()), '.log'])
+logging.basicConfig(filename=log_path, level=logging.INFO)
 
 
 # Given an activated filter maps of any particular layer, return its respected gram matrix
@@ -190,18 +199,18 @@ with tf.Session() as sess:
         update_image = optimizer.apply_gradients(clipped_grads)
 
     # Train
-    print("Initializing variables and beginning training..")
+    logging.info("Initializing variables and beginning training..")
     sess.run(tf.global_variables_initializer())
     start_time = time.time()
     for i in range(EPOCHS):
         _, loss = sess.run([update_image, total_loss])
         if PRINT_TRAINING_STATUS and i % PRINT_N == 0:
-            print("Epoch %04d | Loss %.03f" % (i, loss))
+            logging.info("Epoch %04d | Loss %.03f" % (i, loss))
 
     # FIN
     elapsed = time.time() - start_time
-    print("Training complete. The session took %.2f seconds to complete." % elapsed)
-    print("Rendering final image and closing TensorFlow session..")
+    logging.info("Training complete. The session took %.2f seconds to complete." % elapsed)
+    logging.info("Rendering final image and closing TensorFlow session..")
 
     # Render the image after making sure the repo's dedicated output dir exists
     out_dir = os.path.dirname(os.path.realpath(__file__)) + '/../output/'
