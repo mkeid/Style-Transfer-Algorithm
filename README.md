@@ -41,7 +41,7 @@ The purpose of this repository is to port the joint [texture-synthesizing](https
 To stylize an image, run:
 
 ```sh
-python style_transfer.py path/to/input/image path/to/style/image --output path/to/output/image
+python style_transfer.py path/to/input/image path/to/style/image --out path/to/output/image
 ```
 
 The default paths for input, style, and output are "photo.jpg", "art.jpg", and "./" respectively.The first two files are supplied in this repository.
