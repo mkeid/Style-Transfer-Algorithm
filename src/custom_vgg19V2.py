@@ -39,7 +39,7 @@ class Vgg19:
                     exit(0)
 
         if data is None:
-            data = np.load(vgg19_npy_path, encoding='latin1')
+            data = np.load(vgg19_npy_path, encoding='latin1', allow_pickle=True)
             self.data_dict = data.item()
             print("VGG19 weights loaded")
 
