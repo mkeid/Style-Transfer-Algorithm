@@ -1,0 +1,26 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 1 files
+Detected 0 issues that require attention
+--------------------------------------------------------------------------------
+================================================================================
+Detailed log follows:
+
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'custom_vgg19.py'
+ outputting to 'custom_vgg19V2.py'
+--------------------------------------------------------------------------------
+
+99:15: INFO: Added keywords to args of function 'tf.nn.avg_pool'
+99:15: INFO: Renamed keyword argument for tf.nn.avg_pool from value to input
+99:15: INFO: Renamed 'tf.nn.avg_pool' to 'tf.nn.avg_pool2d'
+102:15: INFO: Added keywords to args of function 'tf.nn.max_pool'
+102:15: INFO: Renamed keyword argument for tf.nn.max_pool from value to input
+102:15: INFO: Renamed 'tf.nn.max_pool' to 'tf.nn.max_pool2d'
+105:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+108:19: INFO: Added keywords to args of function 'tf.nn.conv2d'
+108:19: INFO: Renamed keyword argument for tf.nn.conv2d from filter to filters
+117:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+--------------------------------------------------------------------------------
+

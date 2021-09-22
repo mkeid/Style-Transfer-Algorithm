@@ -1,5 +1,6 @@
 import numpy as np
 import os
+
 import skimage
 import skimage.io
 import skimage.transform
@@ -7,7 +8,6 @@ import PIL
 import scipy
 # from scipy.misc import toimage
 from PIL import Image
-
 
 
 # Return a numpy array of an image specified by its path
@@ -49,10 +49,10 @@ def load_image2(path, height=None, width=None):
 # Render the generated image given a tensorflow session and a variable image (x)
 def render_img(session, x, save=False, out_path=None):
     shape = x.get_shape().as_list()
-    img = np.clip(session.run(x), 0, 1)
+    img = (np.clip(session.run(x), 0, 1) * 255).astype(np.uint8)
 
     if save:
-        Image.fromarray(np.reshape(img, shape[1:])).save(out_path)
+        Image.fromarray(np.reshape(img, shape[1:])).resize((1200, 1200)).save(out_path)
         # toimage(np.reshape(img, shape[1:])).save(out_path)
     else:
         Image.fromarray(np.reshape(img, shape[1:])).show()
